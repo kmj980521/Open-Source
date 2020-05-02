@@ -1,0 +1,165 @@
+import numpy as np
+import pygame
+import sys
+import math
+
+BLUE = (0,0,255)
+BLACK = (0,0,0)
+RED = (255,0,0)
+YELLOW = (255,255,0)
+WHITE = (255,255,255)
+
+ROW_COUNT = 6
+COLUMN_COUNT = 7
+
+def create_canvas():
+	canvas = np.zeros((ROW_COUNT+1,COLUMN_COUNT))
+	return canvas
+
+def drawCircle(canvas, row, col, piece):
+	canvas[row][col] = piece
+
+def isNotEmpty(canvas, col):
+    return canvas[ROW_COUNT-1][col] == 0
+
+def get_next_open_row(canvas, col):
+	for r in range(ROW_COUNT):
+		if canvas[r][col] == 0:
+			return r
+
+def print_canvas(canvas):
+	print(np.flip(canvas, 0))
+
+def checkWinner(canvas, piece):
+	# case N-S
+	for c in range(COLUMN_COUNT-3): #
+		for r in range(ROW_COUNT):
+			if canvas[r][c] == piece and canvas[r][c+1] == piece and canvas[r][c+2] == piece and canvas[r][c+3] == piece:
+				return True
+
+	# case W-E
+	for c in range(COLUMN_COUNT):
+		for r in range(ROW_COUNT-3):
+			if canvas[r][c] == piece and canvas[r+1][c] == piece and canvas[r+2][c] == piece and canvas[r+3][c] == piece:
+				return True
+
+	# Check positively sloped diaganols
+
+	for c in range(COLUMN_COUNT-3):
+
+		for r in range(ROW_COUNT-3):
+
+			if canvas[r][c] == piece and canvas[r+1][c+1] == piece and canvas[r+2][c+2] == piece and canvas[r+3][c+3] == piece:
+
+				return True
+
+
+
+	# Check negatively sloped diaganols
+
+	for c in range(COLUMN_COUNT-3):
+
+		for r in range(3, ROW_COUNT):
+
+			if canvas[r][c] == piece and canvas[r-1][c+1] == piece and canvas[r-2][c+2] == piece and canvas[r-3][c+3] == piece:
+
+				return True
+
+
+
+def draw_canvas(canvas):
+	for c in range(COLUMN_COUNT):
+		for r in range(ROW_COUNT):
+			pygame.draw.rect(screen, BLUE, (c*SQUARESIZE, r*SQUARESIZE, SQUARESIZE, SQUARESIZE))
+			pygame.draw.circle(screen, WHITE, (int(c*SQUARESIZE+SQUARESIZE/2), int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS)
+
+	
+
+	for c in range(COLUMN_COUNT):
+
+		for r in range(ROW_COUNT):		
+
+			if canvas[r][c] == 1:
+				pygame.draw.circle(screen, RED, (int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS)
+
+			elif canvas[r][c] == 2:
+				pygame.draw.circle(screen, YELLOW, (int(c*SQUARESIZE+SQUARESIZE/2), height-int(r*SQUARESIZE+SQUARESIZE/2)), RADIUS)
+
+	pygame.display.update()
+
+canvas = create_canvas()
+print_canvas(canvas)
+pygame.init()
+
+SQUARESIZE = 100
+game_over = False
+turn = 0
+
+width = COLUMN_COUNT * SQUARESIZE +300#COLUM=7
+height = (ROW_COUNT) * SQUARESIZE #ROW=6
+
+size = (width, height)
+RADIUS = int(SQUARESIZE/2 - 15)
+screen = pygame.display.set_mode(size)
+
+draw_canvas(canvas)
+pygame.display.update()
+myfont = pygame.font.SysFont("lato", 55)
+myfont2 = pygame.font.SysFont("lato",55)
+while not game_over:
+	for event in pygame.event.get():
+
+		if event.type == pygame.QUIT:
+			sys.exit()
+
+		pygame.display.update()
+
+
+		if event.type == pygame.MOUSEBUTTONDOWN:
+
+			if turn == 0:
+				posx = event.pos[0]
+				col = int(math.floor(posx/SQUARESIZE))
+
+				if isNotEmpty(canvas, col):
+					row = get_next_open_row(canvas, col)
+					drawCircle(canvas, row, col, 1)
+
+
+
+					if checkWinner(canvas, 1):
+						label = myfont.render("Red  win !!!", 1, RED)
+						screen.blit(label, (750,50))
+                        
+						label = myfont.render(" Try new game", 1, RED)
+						screen.blit(label, (710,150))
+                       
+						game_over = True
+
+			else:				
+				posx = event.pos[0]
+				col = int(math.floor(posx/SQUARESIZE))
+
+
+
+				if isNotEmpty(canvas, col):
+
+					row = get_next_open_row(canvas, col)
+					drawCircle(canvas, row, col, 2)
+
+					if checkWinner(canvas, 2):
+						label = myfont.render("Yellow win !!!", 1, YELLOW)
+						screen.blit(label, (730,50))
+                        
+						label = myfont.render("Try new game", 1, YELLOW)
+						screen.blit(label, (730,150))
+                        
+						game_over = True
+
+			print_canvas(canvas)
+			draw_canvas(canvas)
+			turn += 1
+			turn = turn % 2
+
+			if game_over:
+				pygame.time.wait(3000)
