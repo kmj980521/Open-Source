@@ -1,0 +1,159 @@
+import numpy as np
+import sys
+import math
+BLUE = (0,0,255)
+RED = (255,0,0)
+YELLOW = (255,255,0)
+WHITE = (255,255,255)
+
+ROW_C = 6
+COLUMN_C = 7
+
+BOXSIZE = 100
+game_over = False
+turn = 1
+WIDTH = COLUMN_C * BOXSIZE +200#COLUM=7
+HEIGHT = (ROW_C) * BOXSIZE #ROW=6
+
+RADIUS = int(BOXSIZE/2 - 15)
+BACKGROUND_BOX=Rect((0,0),(WIDTH,HEIGHT))
+which_case=0
+winner_name=0;
+mouseDown=True
+def checkWinner(canvas, element):
+    # case NS-WE
+    
+	global which_case
+    # case NS-WE
+    
+	for c in range(COLUMN_C-3):
+		for r in range(3, ROW_C):
+			if canvas[r][c] == element and canvas[r-1][c+1] == element and canvas[r-2][c+2] == element and canvas[r-3][c+3] == element:
+				which_case=1
+
+				return True
+	# case W-E
+	for c in range(COLUMN_C-3): #
+		for r in range(ROW_C):
+			if canvas[r][c+3] == element and canvas[r][c+2] == element and canvas[r][c+1] == element and canvas[r][c] == element:
+				which_case=2
+				return True
+
+	
+
+	# case SW-NE
+
+	for c in range(COLUMN_C-3):
+		for r in range(ROW_C-3):
+			if canvas[r][c] == element and canvas[r+1][c+1] == element and canvas[r+2][c+2] == element and canvas[r+3][c+3] == element:
+				which_case=3
+				return True
+    # case N-S
+	for c in range(COLUMN_C):
+		for r in range(ROW_C-3):
+			if canvas[r][c] == element and canvas[r+1][c] == element and canvas[r+2][c] == element and canvas[r+3][c] == element:
+				which_case=4
+				return True
+
+
+def create_canvas():
+	canvas = np.zeros((ROW_C,COLUMN_C))
+	return canvas
+
+def drawCircle(canvas, row, col, element):
+	canvas[row][col] = element
+
+def isNotEmpty(canvas, col):
+    return canvas[ROW_C-1][col] == 0
+
+def get_next_open_row(canvas, col):
+	if canvas[ROW_C-1][col]!=0:
+		return ROW_C-1
+	for r in range(ROW_C):
+		if canvas[r][col] == 0:
+			return r
+
+def print_canvas(canvas):
+	print(np.flip(canvas, 0))
+
+def make_background():
+    screen.draw.filled_rect(BACKGROUND_BOX,BLUE)
+
+    for c in range(COLUMN_C):
+        for r in range(ROW_C):
+            screen.draw.filled_circle((int(c*BOXSIZE+BOXSIZE/2), HEIGHT-int(r*BOXSIZE+BOXSIZE/2)),RADIUS,WHITE)
+            
+    for c in range(COLUMN_C):
+        for r in range(ROW_C):
+            if canvas[r][c]==1:
+                screen.draw.filled_circle((int(c*BOXSIZE+BOXSIZE/2), HEIGHT-int(r*BOXSIZE+BOXSIZE/2)),RADIUS,RED)
+            elif canvas[r][c]==2:
+                screen.draw.filled_circle((int(c*BOXSIZE+BOXSIZE/2), HEIGHT-int(r*BOXSIZE+BOXSIZE/2)),RADIUS,YELLOW)
+    
+canvas=create_canvas()
+def show_turn(turn):
+    if turn%2==0: #yellow turn
+        screen.draw.filled_circle(((790,200 )),RADIUS,YELLOW)
+        screen.draw.text("YELLOW",(700,250),fontsize=60,color="YELLOW",owidth=1.5,scolor="WHITE")
+        screen.draw.text("Turn",(740,320),fontsize=60,color="YELLOW",owidth=1.5)
+    else:
+        screen.draw.filled_circle(((790,250 )),RADIUS,RED)
+        screen.draw.text("RED Turn ",(700,300),fontsize=60,color="RED",owidth=1.5)
+        
+def show_case(which_case):
+    if which_case==1:
+        screen.draw.text("CASE: NS-WE",(180,250),fontsize=90,color="WHITE",owidth=1.5)
+    elif which_case==2:
+        screen.draw.text("CASE: W-E",(180,250),fontsize=90,color="WHITE",owidth=1.5)
+    elif which_case==3:
+        screen.draw.text("CASE: SW-NE",(180,250),fontsize=90,color="WHITE",owidth=1.5)
+    elif which_case==4:
+        screen.draw.text("CASE: N-S",(180,250),fontsize=90,color="WHITE",owidth=1.5)
+def show_winner(winner_name):
+    if winner_name==1:
+        screen.draw.text("Winner is",(200,50),fontsize=90,color="RED",owidth=1.5)
+        screen.draw.text("RED",(270,150),fontsize=90,color="RED",owidth=1.5)
+    elif winner_name==2:
+        screen.draw.text("Winner is",(200,50),fontsize=90,color="YELLOW",owidth=1.5)
+        screen.draw.text("YELLOW",(210,150),fontsize=90,color="YELLOW",owidth=1.5)
+def end_game(game_over):
+    if game_over==True:
+        screen.draw.text("Game over!",(160,350),fontsize=90,color="YELLOW",owidth=1.5)
+        screen.draw.text("Try new game",(140,450),fontsize=90,color="YELLOW",owidth=1.5)
+        pos=False
+def draw():
+    make_background()
+    show_turn(turn)
+    show_case(which_case)
+    show_winner(winner_name)
+    end_game(game_over)
+    
+def on_mouse_down(pos):
+    global turn
+    global game_over
+    global name
+    global winner_name
+    global mouseDown
+    turn += 1
+    turn = turn % 2
+    if game_over == True:
+        mouseDown=False
+        
+    if turn == 0 and not game_over:
+        posx =pos[0]
+        col = int(math.floor(posx/BOXSIZE))
+        row = get_next_open_row(canvas, col)
+        drawCircle(canvas, row, col, 1)
+        if checkWinner(canvas, 1):
+            winner_name=1
+            game_over = True
+    elif turn==1 and not game_over:
+        posx = pos[0]
+        col = int(math.floor(posx/BOXSIZE))
+        row = get_next_open_row(canvas, col)
+        drawCircle(canvas, row, col, 2)
+
+        if checkWinner(canvas, 2):
+            winner_name=2
+            game_over = True
+            
