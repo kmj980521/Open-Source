@@ -1,0 +1,14 @@
+        row = get_next_open_row(canvas, col)
+        drawCircle(canvas, row, col, 1)
+        if checkWinner(canvas, 1):
+            winner_name=1
+            game_over = True
+    elif turn==1 and not game_over:
+        posx = pos[0]
+        col = int(math.floor(posx/BOXSIZE))
+        row = get_next_open_row(canvas, col)
+        drawCircle(canvas, row, col, 2)
+
+        if checkWinner(canvas, 2):
+            winner_name=2
+            game_over = True
